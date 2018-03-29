@@ -10,6 +10,7 @@ voir fichier install & tests-issues.txt pour les instructions.
 les repos nécessaires ont été forkés sur mon github 
 https://github.com/agaldemas/iotagent-json, 
 https://github.com/agaldemas/fiware-idm, horizon et keystone)
+les répertoires knowage, fiware-idm et docker-openstack-horizon sont des repository github qui n'ont pas été inclus ici.
 
 Pour lancer les 20 containers aller dans le répertoire ngsi puis entrer "docker-compose up"
 pour y voir quelque chose
