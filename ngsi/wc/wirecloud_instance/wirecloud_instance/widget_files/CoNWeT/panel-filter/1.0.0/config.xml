@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<operator xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWeT" name="panel-filter" version="1.0.0">
+  <details>
+    <title>Panel filter</title>
+    <homepage>https://github.com/Wirecloud/panel-filter-operator</homepage>
+    <authors>aarranz</authors>
+    <email>aarranz@conwet.com</email>
+    <image>images/catalogue.png</image>
+    <description>Filter attributes to use it in the panel widget</description>
+    <license>Apache License 2.0</license>
+    <licenseurl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseurl>
+    <doc>doc/userguide.md</doc>
+    <changelog>doc/changelog.md</changelog>
+  </details>
+    <preferences>
+        <preference name="attr" label="Attr" description="Attribute to filter" default="" type="text"/>
+        <preference name="units" label="Units" description="Units of the attribute" default="" type="text"/>
+    </preferences>
+  <wiring>
+    <inputendpoint name="entityInput" type="text" label="Entity" description="Received entity will be transform to be used in the panel widget" friendcode="entity"/>
+    <outputendpoint name="entityOutput" type="text" label="Entity" description="Filtered value" friendcode="entity"/>
+  </wiring>
+  <scripts>
+    <script src="js/main.js"/>
+  </scripts>
+</operator>

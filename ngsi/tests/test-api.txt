@@ -1,0 +1,99 @@
+1/ creation service
+Request: POST http://localhost:4041/iot/services
+Header:
+Content-Type:application/json
+Fiware-Service:testservice
+Fiware-ServicePath:/testalain
+Body:
+{
+  "services": [
+    {
+      "apikey": "apikey8",
+      "token": "token6",
+      "cbroker": "http://localhost:1026",
+      "entity_type": "thing",
+      "resource": "/iot/json",
+      "attributes": [
+        {
+          "name": "status",
+          "type": "Boolean"
+        },
+                {
+          "name": "temperature",
+          "type": "Float"
+        }
+
+      ],
+      "static_attributes": [
+        {
+          "name": "mystatic",
+          "type": "String",
+          "value": "machin"
+        },
+                {
+          "name": "monstatic",
+          "type": "String",
+          "value": "truc"
+        }
+
+       ]
+
+    }
+  ]
+}
+Answer: status 201 created
+content: {}
+
+========================================================
+2/ list services:
+Request: GET http://localhost:4042/iot/services
+Header:
+Content-Type:application/json
+Fiware-Service:testservice
+Fiware-ServicePath:/*
+Body:
+Answer: status 200 OK
+Content:
+{
+    "count": 1,
+    "services": [
+        {
+            "_id": "5a79d1249c4ee60001a26b48",
+            "subservice": "/testalain",
+            "service": "testservice",
+            "apikey": "apikey8",
+            "resource": "/iot/json",
+            "__v": 0,
+            "attributes": [
+                {
+                    "name": "status",
+                    "type": "Boolean"
+                },
+                {
+                    "name": "temperature",
+                    "type": "Float"
+                }
+            ],
+            "lazy": [],
+            "commands": [],
+            "entity_type": "thing",
+            "internal_attributes": [],
+            "static_attributes": [] // static attributes are not saved
+        }
+    ]
+===============================================
+3/ delete Service
+Request: DELETE http://localhost:4041/iot/services/?resource=/iot/json&apikey=apikey8
+Header:
+Content-Type:application/json
+Fiware-Service:testservice
+Fiware-ServicePath:/testalain
+Body: none
+Answer: status 204 No content
+
+=================================================
+4/ Test create device
+
+=================================================
+5/ Test list Devices
+Request: GET http://localhost:4041/iot/devices?detailed=on

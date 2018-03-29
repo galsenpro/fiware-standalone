@@ -1,0 +1,396 @@
+lancement de portainer
+docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v /Users/alaing/Documents/FIWARE/portainer/data:/data --name portainer portainer/portainer
+
+Problèmes rencontrés avec le déploiement avec le fichier docker-compose.yml du répertoire
+
+il faut ajuster les fichiers de config des agents IOT
+pour qu'ils pointent sur une seule base de données mongodb : iotagent
+prendre les fichiers de config dans les répertoires iotagentul et iotagentjson
+pour mettre à jour les images avec ces versions de fichiers de config
+ou rebuilder l'image dans le répertoire iotagent-ul commande :
+docker build -f Dockerfile .
+idem dans le répertoire iotagent-json
+pour l'instant la config est stockée dans un volume docker pour le container pointant sur le dossier iotagentul (config-blank.js)
+
+il y a un probleme avec la version actuelle de la librairie iotagent-node-lib,
+qui fait que la configuration d'un service pour les attributs n'est pas prise en compte
+une modif qui fonctionne a été proposé : https://github.com/telefonicaid/iotagent-node-lib/issues/544
+je l'ai intégré dans l'image aprés reconfiguration du projet iotagentul
+https://github.com/agaldemas/iotagent-ul (mon fork)
+https://github.com/agaldemas/iotagent-node-lib (fork ou j'ai intégré la modif proposée dans deviceService.js)
+
+pour rebuilder l'image de iotagent-ul
+
+cloner le repository iotagent-ul
+aller dans le répertoire
+supprimer ou renommer npm-shrinkwrap.json
+npm init
+npm install
+grunt init-dev-env
+grunt --force (pas vraiment utile)
+le plus important est de générer un package-lock.json qui pointe sur mon repo agaldemas/iotagent-node-lib
+pour que ce soit cette version qui soit prise en compte au build de l'image
+docker build -t iotagent-ul -f Dockerfile .
+
+faire pareil pour l'iotagent-json
+
+sinon bonne nouvelle ils ont fait le merge des fixs !
+on va pouvoir utiliser les images officielles ! Mais => OK pour agent UL, mais pas pour l'agent JSON ?
+
+
+docker-compose up
+docker stats :
+
+CONTAINER ID        NAME                CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+cd104c636ffb        FIWARE_nginx        0.00%               1.984MiB / 1.952GiB   0.10%               543kB / 2.78MB      4.49MB / 0B         2
+a1c06d236962        FIWARE_wirecloud    0.02%               258.4MiB / 1.952GiB   12.93%              1.66MB / 1.27MB     62.8MB / 20.5kB     5
+c0cb0f240dc1        FIWARE_idasUL       0.19%               79.09MiB / 1.952GiB   3.96%               323kB / 327kB       42.2MB / 0B         10
+4918595d3974        FIWARE_idasJSON     0.01%               77.89MiB / 1.952GiB   3.90%               176kB / 130kB       33.5MB / 0B         10
+01452d5706a5        FIWARE_ngsiproxy    0.00%               10.21MiB / 1.952GiB   0.51%               74.1kB / 36.9kB     28.1MB / 0B         7
+a421b1271b00        FIWARE_orion        0.00%               2.961MiB / 1.952GiB   0.15%               178kB / 126kB       13.7MB / 0B         5
+7f66bcf66b33        FIWARE_cygnus       0.51%               66.47MiB / 1.952GiB   3.33%               147kB / 149kB       111MB / 8.19kB      46
+b5934fb8ed4b        FIWARE_perseofe     0.00%               36.84MiB / 1.952GiB   1.84%               547kB / 532kB       26.2MB / 0B         10
+cd1369d8ead9        FIWARE_comet        0.00%               29.35MiB / 1.952GiB   1.47%               176kB / 130kB       26.7MB / 0B         10
+7cf57eca1f55        FIWARE_keyrock      4.37%               141.7MiB / 1.952GiB   7.09%               2.74kB / 0B         50.6MB / 0B         13
+28e872fa12a2        FIWARE_mosquitto    0.13%               728KiB / 1.952GiB     0.04%               198kB / 143kB       2.04MB / 0B         1
+1de6b9f26784        FIWARE_perseocore   0.37%               236.1MiB / 1.952GiB   11.81%              9.26kB / 5.23kB     59.3MB / 0B         28
+76a096d7d5fb        FIWARE_pepproxy     0.00%               25.7MiB / 1.952GiB    1.29%               3.45kB / 740B       15.6MB / 0B         3
+0fde73999a95        FIWARE_mysql        0.10%               51.27MiB / 1.952GiB   2.56%               121kB / 3.81MB      31.5MB / 169MB      21
+05f394f020ed        FIWARE_authzforce   0.31%               401.5MiB / 1.952GiB   20.08%              3.2kB / 0B          92.3MB / 0B         23
+045c56190a47        FIWARE_mongodb      0.92%               33.8MiB / 1.952GiB    1.69%               1.19MB / 1.39MB     39.1MB / 0B         41
+9e5bb07fb3bb        FIWARE_postgres     0.01%               11MiB / 1.952GiB      0.55%               875kB / 1.51MB      29.6MB / 4.1kB      8
+122fe00a8a93        portainer           0.00%               3.543MiB / 1.952GiB   0.18%               8.81MB / 29.8MB     49.1MB / 0B         7
+
+
+passé le fichier docker-compose.yml en version "3" et ajouté qquelques containers
+
+CONTAINER ID        NAME                 CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+15318fd013a6        ngsi_pep-proxy_1     0.00%               26.07MiB / 1.952GiB   1.30%               5.88kB / 158B       19.7MB / 0B         7
+dbe8fd9449ae        ngsi_nginx_1         0.00%               2.02MiB / 1.952GiB    0.10%               1.5MB / 2.26MB      4.62MB / 0B         2
+2f9b5a228673        ngsi_wirecloud_1     0.06%               275.7MiB / 1.952GiB   13.79%              1.12MB / 1.54MB     62.8MB / 8.19kB     5
+873247a82d73        ngsi_idasUL_1        0.23%               61.37MiB / 1.952GiB   3.07%               1.91MB / 1.95MB     32.4MB / 0B         10
+c94c59513333        ngsi_idasJSON_1      0.01%               49.83MiB / 1.952GiB   2.49%               1.04MB / 780kB      34.6MB / 0B         10
+fddb2ea24cfa        ngsi_keyrock_1       3.34%               141MiB / 1.952GiB     7.05%               5.75kB / 138B       61.8MB / 0B         13
+8c989f99d1b6        ngsi_perseo-fe_1     0.22%               38.23MiB / 1.952GiB   1.91%               3.28MB / 3.2MB      17MB / 0B           10
+d9f78b2d6db8        ngsi_comet_1         0.00%               30.73MiB / 1.952GiB   1.54%               1.04MB / 779kB      26.1MB / 0B         10
+084e59cd3b5f        ngsi_postgres_1      0.01%               6.836MiB / 1.952GiB   0.34%               405kB / 874kB       24.3MB / 4.1kB      7
+6159f80e9fca        ngsi_mysql_1         0.11%               49.3MiB / 1.952GiB    2.47%               27.4kB / 18.6kB     21.5MB / 16.4kB     20
+70ace02e801c        ngsi_authzforce_1    0.26%               413.6MiB / 1.952GiB   20.69%              5.72kB / 0B         87.9MB / 4.1kB      23
+858c83fa99b9        ngsi_ngsiproxy_1     0.00%               12.84MiB / 1.952GiB   0.64%               44.4kB / 41.9kB     29.1MB / 0B         7
+4876033c1fa9        ngsi_cygnus_1        0.33%               54.42MiB / 1.952GiB   2.72%               5.68kB / 0B         48.4MB / 12.3kB     41
+20eb6a6f1b9e        ngsi_orion_1         0.00%               2.789MiB / 1.952GiB   0.14%               902kB / 561kB       19.4MB / 0B         4
+653088e8d6fb        ngsi_mosquitto_1     0.13%               740KiB / 1.952GiB     0.04%               1.18MB / 866kB      3.91MB / 0B         1
+58ba581101a3        ngsi_perseo-core_1   0.33%               203.3MiB / 1.952GiB   10.17%              39.9kB / 29.5kB     56.7MB / 0B         29
+bf25bc17ba54        ngsi_mongo_1         1.04%               32.85MiB / 1.952GiB   1.64%               6.43MB / 7.47MB     31.1MB / 0B         41
+122fe00a8a93        portainer            0.00%               3.688MiB / 1.952GiB   0.18%               16MB / 174MB        110MB / 0B          7
+
+=======================
+test wirecloud
+pas de problème pour l'install de wirecloud (utilise le postgres), configuré avec admin/admin pour credentials
+pour le container ngsiproxy (qui s'occupe des mises à jour push du wirecloud via comet et une subscription orion)
+
+testé le store de wirecloud
+pour "l'achat" des modules (widgets, etc) gratuits sur store fiware, j'ai réussi à un récupérer une première fois quelques modules
+mais là en y retournant à partir de mon wirecloud, dans lequel j'ai déclaré le store du fiware-lab
+un nouvel onglet s'ouvre (je suis connecté dans une autre session au fiware-lab),
+car pour pouvoir valider le panier c'est nécessaire !
+mais au final :je ne peux valider le panier pour un problème de shipping address qui ne peut être validée ?
+pour un truc que je veux télécharger et gratuit, on se demande !
+je me suis reconnecté au fiware-lab
+j'ai modifié l'adresse, rien, et on ne peut pas supprimer une adresse,
+je n'ai pas essayé d'en creer une nouvelle pour voir...
+
+Donc pour avoir des widget j'ai tapé dans les repo github de wirecloud et CoNWeT...
+https://github.com/Wirecloud
+et rebuildé les widgets qui semblait les plus intéressants
+dont le widget spy-wiring qui permet de visualiser la sortie d'un composant (widget ou operator)
+https://github.com/Wirecloud/spy-wiring-widget
+il manquait des fichier dans le répertoire lib dans le widget, je les ai ajouté à la main
+en recopiant ceux d'une autre version de wirecloud testée par Olivier S.
+encore un repo à forker !?
+
+J'ai buildé plusieurs widgets en dernière version à partir des repos github de Wirecloud.
+plusieurs soucis :
+le widget "panel" ne sait pas afficher des chaines de caractères, j'ai fixé le pb dans le code
+et posé une issue dans le github
+https://github.com/Wirecloud/panel-widget/issues/1
+
+
+Faire un graphe avec le widget "linear graph" et l'opérateur source STH, ne fonctionne pas,
+les sorties de source STH ne sont pas compatibles avec le widget "linear graph",
+qui à priori fonctionne avec l'opérateur "History Module to Linear Graph"
+
+Tests avec le widget "Highcharts" on ne peut pas injecter la config et les data à part,
+la doc indique qu'il faut donner le tout dans un json en entrée, car à chaque fois tout est regénéré
+pas vraiment optimisé !
+pour pallier à ce problème j'ai fait un operator "json_merge" qui concatène 2 json, et un operator "load json file"
+qui charge la partie config d'un fichier json stocké dans les ressources du serveur wirecloud
+il faut encore améliorer pour pouvoir injecter plusieurs séries de données.
+
+avec ces widgets et operators, j'ai donc pu créer une dashboard de demo dans le wirecloud :
+admin/test
+
+
+=======================
+test install fiware device simulator
+docker published image have a problème of too old node version !
+forké repos : https://github.com/agaldemas/fiware-device-simulator
+pour utiliser l'image node:4.8.7 çà build et fonctionne, enfin le programme se lance
+il permet de jouer des scenarios d'injection, que nous utiliserons pour les tests.
+
+=======================
+test iotagents  et orion pour position géographique des entités
+le support d'Orion pour le GeoJSON, n'est pas trés clair
+entre un iot agent et Orion seulement la définition simple d'une "location" est possible
+exemple d'attribut :
+"location": {
+        "type": "geo:point",
+        "value": "43.66756, 7.21334"
+}
+ou
+"location": {
+        "type": "geo:json",
+        "value": "43.66756, 7.21334"
+}
+ou
+"location": {
+      "type": "Point",
+      "coordinates": [2.186447514, 41.3763726]
+}
+
+les 3 fonctionnent avec les iotagents, mais l'effet n'est pas le même dans la base mongo
+propagé par l'agent la location en GeoJSON, n'est pas prise en compte comme location dans l'entité
+même propagé avec le type geo:json à partir du service (group), car l'agent utilise NGSI v1 pour communiquer avec Orion
+pour qu'une location en GeoJSON soit prise en compte correctement il faut passer directement par ORION
+mais dans ce cas il n'est plus possible de modifier la location via les agents
+=> cela peut être intéressant si on veut vérrouiller la position de l'entité et qu'elle ne soit pas modifiable
+par erreur, bien que cela ne soit pas le but.
+
+pour la régle de propagation des attributs, si l'attribut est défini au niveau du service (groupe de devices)
+pour les attributs dynamiques ils sont convertis en attributs entité,
+si un attribut dynamique non prévu est présent dans le message de mise à jour en entrée de l'agent il est refusé
+mais attention :
+un device est qd même créé, ainsi q'une entité, s'il n'existe pas.
+et ensuite lors des mises à jour lors d'une mise à jour, les données mappables sont quand même mises à jour,
+mais une erreur est qd même envoyée !
+ensuite il faut savoir que l'attribut "location" est systématiquement pris en compte sans mapping ou définition
+au niveau d'un service (groupe) ou d'un device (à revérifier avec dernières versions).
+il faut aussi savoir que si on utilise directement le nom ("name") d'un attribut destination, au lieu de 'object_id' déclaré au niveau d'un service (group)
+en entréée d'un agent, l'attribut est transmis dans l'entité de destination
+ceci est vrai dans tous les agents, car c'est un comportement de la librairie iotagent-node-lib.
+
+Attention il est possible de transmettre du json dans les "value" des attrbutes au travers de l'iotagent-json
+cela enfreint la règle de format d'une entité basique en ajoutant un niveau non géré à l'objet ngsi,
+et cela se propage aussi dans le sth, ce qui peut être gênant pour les applications
+
+en gros l'assemblage logiciel est permissif, mais pas bullet proof, au niveau de la manipulation des données,
+ce à cause du mix de NGSI v1 et v2
+il ne faut donc pas faire n'importe quoi, pour éviter les surprises.
+
+donc utilisons ce qui fonctionne, à savoir
+  -la définition des attributs "location" en version simple, pas de GeoJSON au travers des iotagents.
+  -ne pas propager d'objets complexes dans les valeurs d'attributs au travers des iotagents.
+  -on peut patcher les entités avec des données conformes à la v2, mais au travers du context broker,
+    pas des iotagents, mais attention pour le sth, qui fonctionne en NGSI v1, utiliser les meta-data.
+
+il y a aussi encore un souci majeur entre orion et les versions > 3.4 id. les 3.6x
+car dans orion écrit en C++ est utilisé un trop ancien driver mongo, mais la dev team Orion
+est sur le sujet pour intégrer le driver plus récent !
+
+================================
+test Knowage
+augmentation de la RAM pour le Docker :
+passage de 2 à 3 Gb (sur mac dans docker preferences advanced).
+
+utilisé login par défaut : biadmin/biadmin
+
+problème le fichier docker-compose ne marche qu'en version 1
+pas trouvé de solution pour intégrer l'image fournie dans un fichier compose en version > 1...
+la méthode utilisée pour détecter le mysql avant de démarrer le tomcat et les différentes applications de knowage
+ne fonctionne pas.
+
+donc gardé le ficher compose version 1 dans le répertoire knowage,
+pour pouvoir accéder en local au container mongo du projet 'ngsi',
+il faut lui ajouter un accès au network "bridge" via portainer,
+afin de le rendre visible sur le réseau bridge du container knowage.
+
+cependant il reste un souci avec la servlet long polling cometd du knowage !
+elle réponds une erreur 400 pour les mises à jour push...
+
+
+paramétrage data source mongo
+url: mongo:27017/sth_service
+driver: mongo
+
+data_set Query sur mongo :
+var query = db.getCollection('sth_/testalain_thing:device_001_thing').find({});
+on arrive à interroger le mongo, mais ensuite à l'utilisation dans un widget le fonctionnement via cometd n'est pas OK (erreur 400)
+cela ne devrait pas survenir si le knowage était accessible via une IP publique, ce qui n'est pas le cas pour l'instant.
+
+====================================
+
+tests perseo CEP.
+
+les problèmes : doc pas vraiment explicite, et pas à jour...
+
+quelques coquilles entre les configs et les variables d'environnement à déclarer ou pas
+certaines se mordent la queue dans le Dockerfile du perseo-core :
+ENV PERSEO_FE_URL=perseo_fe_endpoint
+puis dans perseo_core-entrypoint.sh:
+l'url du perseo-fe peut être passée en paramètre, mais ce n'est pas utilisé
+en tout cas le remplacement dans le fichier /etc/perseo-core.properties ne peut pas être fait,
+la peinture est encore fraiche...
+
+il y a eu des évolutions à noël dernier, et maintenant il faut poster une subscription à Orion,
+pour qu'il alimente le perseo-fe, qui va forwarder l'évenement au perseo-core qui le traite
+par rapport aux régles qu'il a reçu du perseo-fe,
+si une règle est vérifiée pour l'évenement, le perseo-core renvoit la demande d'action pour l'entité en question
+le perseo-fe déclenche alors les actions configurées !
+
+j'ai donc 2 subsciptions primordiales :
+  une vers cygnus (pour l'historisation)
+  et une vers perseo-fe (pour le forward des évenements entités)
+
+
+Attention le truc n'est peut être pas protégé contre une boucle infernale du genre une règle qui incrémente la valeur d'un attributs réinjecté via un agent iot,
+ou directement en agissant sur la valeur de l'attribut de l'entité dans le Orion CB...
+par exemple:
+{
+    "_id": "5aa8f2a62c9dd4000155a275",
+    "name": "my_rule_update_ttt",
+    "description": "la règle qui boucle",
+    "text": "select *,\"my_rule_update_ttt\" as ruleName, *,cast(cast(ev.temperature?, String),float) + 1.0 as temp from pattern [every ev=iotEvent(cast(cast(temperature?,String),float)<5.0 and type=\"thing\")]",
+    "action": {
+        "type": "update",
+        "parameters": {
+            "attributes": [
+                {
+                    "name": "temperature",
+                    "type": "float",
+                    "value": "${temp}"
+                }
+            ]
+        }
+    },
+    "subservice": "/testalain",
+    "service": "testservice"
+}
+dans cette règle la température est augmenté de 1 °c
+dans la doc il est dit qu'un correlation ID est utlisé pour empécher la boucle infini
+j'ai essayé pour vérifier !!!!! => c'est protégé avec le context broker !
+avec renvoi sur l'agent IOT json :
+{
+    "_id" : ObjectId("5aa8fd162c9dd4000155a276"),
+    "name" : "my_rule_update_tto",
+    "description" : "la règle qui boucle sur l'agent iot !",
+    "text" : "expression String js:trunc(name) [trunc(name); function trunc(n) {return n.substr(n.indexOf(':' + 1));}] select *,\"my_rule_update_tto\" as ruleName, *,cast(cast(ev.temperature?, String),float) + 1.0, trunc(cast(ev.id?, String)) as iddev as temp from pattern [every ev=iotEvent(cast(cast(temperature?,String),float)<5.0 and type=\"thing\")]",
+    "action" : {
+        "type" : "post",
+        "parameters" : {
+            "url" : "http://idasJSON:7896/iot/json?k=apikey1&i=${iddev}",
+            "method" : "POST",
+            "headers" : "{\"Content-type\":\"application/json\"}",
+            "qs" : "{}",
+            "json" : "{\"t\":\"${temp}\",\"status\":\"çà chauffe !!!\"}"
+        }
+    },
+    "subservice" : "/testalain",
+    "service" : "testservice"
+}
+mais l'expression :
+expression String js:trunc(name) [trunc(name); function trunc(n) {return n.substr(n.indexOf(\":\" + 1));}] select *,\"my_rule_update_tto\" as ruleName, *,cast(cast(ev.temperature?, String),float) + 1.0  as temp, trunc(cast(ev.id?, String)) as iddev from pattern [every ev=iotEvent(cast(cast(temperature?,String),float)<5.0 and type=\"thing\")]
+ne passe pas dans le perseo-core (syntax error position 34: au car "[") ???
+
+=====================================================
+pb taille disk vm Docker dans menu docker/preferences
+augmentation à 96Go,
+et mémoire à 3Go pour héberger le Knowage qui est gourmand en memoire (presque 1 Go au repos)
+
+=====================================
+Tests fiware-idm = keyrock<a modified keystone> + horizon<fork from openstack horizon>
+Fiware-idm est un mix de 2 forks : keyrock issu de keystone et d'horizon, en provenance d'openstack.
+
+le rebuild de l'image ging/fiware-idm ne fonctionnait plus, à partir du repo
+trouvé un fix dans un autre projet utilisant keystone et horizon : https://github.com/Gradiant/keyrock-https
+consistant en l'ajout de 2 fichiers qui fixent le souci d'installation du paquet python "six" et son utilisation avec le Dockerfile.
+fix_createVenv_horizon.py
+fix_createVenv_keystone.py (celui-ci n'est pas utile au final)
+dans le répertoire docker du projet fiware-idm
+
+donc pour avancer, j'ai forké les 3 repo ging fiware-idm, horizon et keystone
+https://github.com/agaldemas/fiware-idm
+https://github.com/agaldemas/keystone
+https://github.com/agaldemas/horizon
+pour avoir les modifs intégrées et les repos prêts pour pouvoir builder les images comme on veut !
+
+dans mon repo keystone pour qu'il fonctionne avec un horizon séparé:
+
+modifier la config (le fichier /keystone/etc/keystone.conf), n'est pas suffisant, car il est surchargé par le contenu initial
+de la base de données, néanmoins le fichier de config sert à redéfinir les ports ou autre subtilités
+
+le fichier init de population de la base de données keystone est :
+keystone/contrib/initial_data/data.py
+donc dans mon repo keystone il est modifié afin populer la base
+avec le nom du serveur keyrock:(alias keystone) au lieu de localhost/127.0.0.1.
+pour les services proposés par keystone (l'interface publique port: 5000, et l'interface d'admin port: 35357)
+à noter : le port compute qui subsiste dans la config est obsolète (deprecated)
+il reste le port interne, qui n'est pas très clair...
+
+dans mon repo horizon modifié le fichier horizon/openstack_dashboard/local/local_settings.py.example pour y changer le nom du serveur de localhost à keyrock:keystone.
+ainsi il est copié sur le fichier de config local_settings.py qui est la config de horizon lors du build de l'image.
+le fichier de config peut néanmoins être externalisé dans un volume sur la machine hôte du container
+
+pour builder les images :
+git clone https://github.com/agaldemas/fiware-idm
+allez dans le répertoire du extras/docker/ du projet fiware-idm
+cd fiware-idm/extras/docker
+
+  A-pour builder l'image fiware-idm (keystone + horizon):
+docker build -t idm .
+mais il faut changer 2 choses pour avoir l'horizon du container idm qui fonctionne aussi:
+1/ dans la conf du horizon (le fichier /horizon/openstack_dashboard/local/local_settings.py)
+  remettre localhost à la place de keyrock,
+2/ et de changer le fichier /etc/hosts du container
+en ajoutant keystone en alias de localhost/127.0.0.1, d'ailleurs cela doit suffire ;O)
+ainsi il y a un horizon intégré qui fonctionne.
+avec un container horizon externe qui fonctionne aussi sur le keystone !
+
+  B-pour builder une image keystone stand-alone qui s'expose comme service/host "keystone":
+docker build -t keystone Dockerfile-keystone
+
+  C-pour builder une image avec horizon seul mappée sur le service/host "keystone", aller dans le répertoire extras/docker-horizon et:
+docker build -t horizon .
+l'image générée donne un horizon qui se connecte à un service/host "keystone"
+
+mais les problèmes ne sont pas terminés, initialement le keystone utilise une base locale SQLlite intégrée au container
+alors que nous voulons que la base soit dans un postgres à part...
+pour la solution SQLlite le job est fait dans le build de l'image
+pour l'utilisation de la base sur un postgres externe cela ne convient pas !
+
+pour configurer l'utilisation de la base postgres dans le fichier de config keystone.conf, à la rubrique [database]
+indiquer le serveur à atteindre :
+connection=postgresql://keystone:keystone@postgres/keystone
+
+la base est créée dans le container postgres manuellement :
+se connecter sur le container postgres (docker exec -ti ngsi_postgres_1 bash) ou (docker-compose exec postgres si dans NGSI ou sous répertoire)
+puis exécuter:
+sudo su - postgres
+psql
+CREATE USER keystone;
+ALTER USER keystone WITH PASSWORD 'keystone';
+CREATE DATABASE keystone;
+GRANT ALL PRIVILEGES ON DATABASE keystone TO keystone;
+\q
+exit
+
+pour la création de la structure (tables) et la population initiale, il faut executer les commandes db_sync dans le container
+pour cela utiliser le Dockerfile modifié (dans répertoire keyrock), l'image est buildée sans populer la base de données.
+et la création des tables et la population sont faites au démarrage du container keyrock/keystone.
+
+ensuite j'ai testé le horizon provenant d'openstack (https://github.com/openstack/horizon), dont est issu le ging/horizon de Fiware,
+mais il ne fonctionne pas avec le keyrock/keystone de Fiware, il manque un certain nombre de modules notamment ceux d'OAuth2.
+
+donc pour l'instant il sera plus simple d'utiliser le ging/horizon, dans lequel il a été possible d'intégrer le panel de gestion des services IOT que dévelope Adama.
+
+keyrock/keystone et horizon sont à builder à partir des repos forkés (fiware-idm), ou pour keyrock/keystone à partir du répertoire keyrock :
+docker build -t keystone.

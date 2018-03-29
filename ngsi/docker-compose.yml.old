@@ -1,0 +1,262 @@
+#Docker Compose FIWARE BACKEND MANAGEMENT
+version: "3"
+
+services:
+
+  FIWARE-mongodb:
+    image: mongo:latest
+    hostname: mongo
+    #container_name: FIWARE_mongodb
+    command: --nojournal
+    expose:
+      - "27017"
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/mongodb:/data/db
+
+  FIWARE-orion:
+    image: fiware/orion
+    hostname: orion
+    #container_name: FIWARE_orion
+    # links:
+    #   - FIWARE-mongodb
+    #   - FIWARE-cygnus
+    #   #- FIWARE-ngsiproxy
+    ports:
+      - "1026:1026"
+    command: -dbhost FIWARE-mongodb
+
+  FIWARE-mosquitto:
+      image: eclipse-mosquitto
+      hostname: mosquitto
+      #container_name: FIWARE_mosquitto
+      volumes:
+        - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+        - ./mosquitto/certs/:/etc/mosquitto/certs/
+      expose:
+        - "8083"
+      ports:
+        - "8083:1883"
+        - "8084:8883"
+
+  FIWARE-idasJSON:
+      #image: telefonicaiot/iotagent-json
+      image: iotagent-json
+      hostname: idasjson
+      #container_name: FIWARE_idasJSON
+      links:
+           - FIWARE-mongodb
+      #     - FIWARE-orion
+      #     - FIWARE-mosquitto
+      expose:
+          - "7896"
+          - "4041"
+      ports:
+          - "7896:7896"
+          - "4041:4041"
+      volumes:
+          - ./iotagentjson/config.js:/opt/iotajson/config.js
+
+  FIWARE-idasUL:
+      image: iotagent-ul
+      #image: telefonicaiot/iotagent-ul
+      hostname: idasul
+      #container_name: FIWARE_idasUL
+      links:
+           - FIWARE-mongodb
+      #     - FIWARE-orion
+      #     - FIWARE-mosquitto
+      expose:
+          - "7897"
+          - "4042"
+      ports:
+          - "7897:7896"
+          - "4042:4041"
+      volumes:
+          - ./iotagentul/config-blank.js:/opt/iotaul/config-blank.js
+
+  FIWARE-mysql:
+      image: mysql:5.5
+      hostname: mysql
+      #container_name: FIWARE_mysql
+      expose:
+          - "3306"
+      ports:
+          - "3306:3306"
+      environment:
+          - MYSQL_ROOT_PASSWORD=mysql
+
+
+  FIWARE-postgres:
+      image: postgres:latest
+      hostname: postgres
+      #container_name: FIWARE_postgres
+      restart: always
+      expose:
+          - "5432"
+      ports:
+          - "5432:5432"
+      volumes:
+          - ./postgres-data:/var/lib/postgresql/data
+      environment:
+         - POSTGRES_DB=test
+         - POSTGRES_USER=postgres
+         - POSTGRES_PASSWORD=postgres
+
+  FIWARE-perseo-core:
+      image: telefonicaiot/perseo-core
+      hostname: perseo-core
+      #container_name: FIWARE_perseocore
+      expose:
+          - "8090"
+      ports:
+          - "8090:8080"
+      environment:
+          - PERSEO_FE_URL=perseo-fe:9090
+
+
+  FIWARE-cygnus:
+      #image: fiware/cygnus-ngsi
+      image: telefonicaiot/fiware-cygnus:latest
+      hostname: cygnus
+      #container_name: FIWARE_cygnus
+      # links:
+      #     - FIWARE-mysql:iot-mysql
+      #     - FIWARE-mongodb
+      #     - FIWARE-postgres
+      expose:
+          - "5050"
+          - "8082"
+      ports:
+          - "5050:5050"
+          - "8082:8081"
+      environment:
+          - CYGNUS_MYSQL_USER=root
+          - CYGNUS_MYSQL_PASS=mysql
+          - CYGNUS_MONGO_USER=
+          - CYGNUS_MONGO_PASS=
+          #- CYGNUS_LOG_LEVEL=DEBUG
+      volumes:
+         - ./cygnus/agent.conf:/opt/apache-flume/conf/agent.conf
+
+  FIWARE-comet:
+      image: fiware/sth-comet:latest
+      hostname: comet
+      #container_name: FIWARE_comet
+      links:
+        - FIWARE-mongodb
+      expose:
+          - "8666"
+      ports:
+          - "8666:8666"
+      environment:
+          - STH_HOST=0.0.0.0
+          - DB_URI=mongo:27017
+
+
+  ### AUTHENTIFICATION
+
+  FIWARE-authzforce:
+      image: fiware/authzforce-ce-server:release-5.4.1
+      hostname: authzforce
+      #container_name: FIWARE_authzforce
+      expose:
+          - "8080"
+
+  FIWARE-keyrock:
+      image: fiware/idm:latest
+      hostname: keyrock
+      #container_name: FIWARE_keyrock
+      links:
+          - FIWARE-authzforce
+      expose:
+          - "5000"
+          - "8000"
+      ports:
+          - "5000:5000"
+          - "8000:8000"
+
+  FIWARE-pepproxy:
+      #Proxy Authentification ORION
+      image: fiware/pep-proxy:latest
+      hostname: pepproxy
+      #container_name: FIWARE_pepproxy
+      expose:
+          - "8081"
+      ports:
+          - "8081:8081"
+      volumes:
+          - "./pepproxy/config.js:/opt/fiware-pep-proxy/config.js"
+
+  #FIWARE-pepproxy2:
+  #    #Proxy Authentification IDAS
+  #    image: fiware/pep-proxy:latest
+  #    hostname: pepproxy2
+  #    container_name: FIWARE_pepproxy2
+  #    expose:
+  #        - "8081"
+  #    ports:
+  #        - "8082:8081"
+  #    volumes:
+  #        - "/root/FIWARE/NGSI/pepproxy/config2.js:/opt/fiware-pep-proxy/config.js"
+
+  FIWARE-perseo-fe:
+      image: telefonicaiot/perseo-fe
+      hostname: perseo-fe
+      #container_name: FIWARE_perseofe
+      restart: on-failure
+      expose:
+          - "9090"
+      ports:
+          - "9090:9090"
+      links:
+           - FIWARE-perseo-core
+           - FIWARE-mongodb
+  #    depends_on:
+  #        - "FIWARE-perseo-core"
+      environment:
+          - PERSEO_MONGO_HOST=mongo
+          - PERSEO_CORE_URL=http://perseo-core:8080
+      volumes:
+          - ./perseo/config.js:/opt/perseo-fe/config.js
+
+  FIWARE_nginx:
+      image: nginx:latest
+      #container_name: FIWARE_nginx
+      ports:
+          - "80:80"
+      volumes:
+          - ./wc/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+          - ./wc/static:/var/www/static:ro
+  #    volumes_from:
+  #        - FIWARE-wirecloud
+      # links:
+      #     - FIWARE-wirecloud:wirecloud
+
+  FIWARE-ngsiproxy:
+      image: fiware/ngsiproxy
+      hostname: ngsiproxy
+      #container_name: FIWARE_ngsiproxy
+      links:
+        - FIWARE-orion
+      expose:
+        - "3000"
+      ports:
+        - "3000:3000"
+
+  FIWARE-wirecloud:
+      image: fiware/wirecloud:latest-composable
+      hostname: wirecloud
+      #container_name: FIWARE_wirecloud
+      links:
+         - FIWARE-postgres
+      #   - FIWARE-ngsiproxy
+      #   - FIWARE-orion
+      expose:
+        - "8100"
+      ports:
+        - "8100:8000"
+      volumes:
+        - ./wc/wirecloud_instance:/opt/wirecloud_instance
+        - ./wc/static:/var/www/static

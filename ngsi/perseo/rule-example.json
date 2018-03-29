@@ -1,0 +1,50 @@
+{
+  "name":"my_rule_update",
+  "text":"select *,\"my_rule_update\" as ruleName, *, ev.temperature? as Temperature, ev.id? as Meter from pattern [every ev=iotEvent(cast(cast(temperature?,String),float)>1.5 and type=\"thing\")]",
+  "action":{
+    "type":"update",
+    "parameters":{
+      "name":"abnormal",
+      "value":"true",
+      "type":"boolean"
+    }
+  }
+},
+
+{
+    "name": "my_rule_update",
+    "text": "select *,\"my_rule_update\" as ruleName, *, ev.temperature? as Temperature, ev.id? as Sensor from pattern [every ev=iotEvent(cast(cast(temperature?, String), float) > 11.5 and type=\"thing\")]",
+    "action": {
+        "type": "update",
+        "parameters": {
+            "attributes": [
+                {
+                    "name": "status",
+                    "type": "string",
+                    "value": "trop chaud"
+                }
+            ]
+        }
+    },
+    "subservice": "/testalain",
+    "service": "testservice"
+},
+{
+    "name": "my_rule_update_h",
+    "text": "select *,\"my_rule_update_h\" as ruleName, *, ev.humidity? as Humidity, ev.id? as Sensor from pattern [every ev=iotEvent(cast(cast(humidity?,String),float) > 77.0 and type=\"thing\")]",
+    "text": "select *,\"blood_rule_update\" as ruleName from pattern [every ev=iotEvent(cast(cast(BloodPressure?,String),float)>1.5 and type=\"BloodMeter\")]",
+    "action": {
+        "type": "update",
+        "parameters": {
+            "attributes": [
+                {
+                    "name": "status",
+                    "type": "string",
+                    "value": "il fait trop humide"
+                }
+            ]
+        }
+    },
+    "subservice": "/testalain",
+    "service": "testservice"
+}

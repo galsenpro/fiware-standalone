@@ -1,0 +1,281 @@
+{
+	"variables": [],
+	"info": {
+		"name": "FIWARE test-iot",
+		"_postman_id": "6ccef45e-c49d-c2dc-9e81-d44621392ac6",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "CREATE-ORION ENTITIES",
+			"request": {
+				"url": "iot.testnca.org:1026/v2/entities/",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Fiware-Service",
+						"value": "testnca",
+						"description": ""
+					},
+					{
+						"key": "Fiware-ServicePath",
+						"value": "/path1",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n        \"id\": \"test1\",\r\n        \"type\": \"obj-test\",\r\n        \"description\":  {\r\n        \"type\": \"Text\",\r\n        \"value\": \"test description\"            \r\n    },\r\n        \"location\": {\r\n        \"type\": \"geo:point\",\r\n        \"value\": \"43.66756, 7.21334\"\r\n    },\r\n        \"name\": {\r\n        \"type\": \"Text\",\r\n        \"value\": \"test1\"\r\n    },\r\n        \"temperature\": {\r\n        \"type\": \"Number\",\r\n        \"value\": \"\"\r\n    },\r\n        \"unit\": {\r\n        \"type\": \"Text\",\r\n        \"value\": \"°c\"\r\n    }\r\n}\r\n\r\n"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET-ORION ENTITIES",
+			"request": {
+				"url": {
+					"raw": "iot.testnca.org:1026/v2/entities?options=keyValues",
+					"host": [
+						"iot",
+						"testnca",
+						"org"
+					],
+					"port": "1026",
+					"path": [
+						"v2",
+						"entities"
+					],
+					"query": [
+						{
+							"key": "options",
+							"value": "keyValues",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": "",
+						"disabled": true
+					},
+					{
+						"key": "Fiware-Service",
+						"value": "testnca",
+						"description": ""
+					},
+					{
+						"key": "Fiware-ServicePath",
+						"value": "/path1",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"sample-id\",\r\n    \"type\": \"Restaurant\",\r\n    \"address\": {\r\n        \"type\": \"PostalAddress\",\r\n        \"value\": {\r\n            \"streetAddress\": \"Cuesta de las Cabras Aldapa 2\",\r\n            \"addressRegion\": \"Araba\",\r\n            \"addressLocality\": \"Alegría-Dulantzi\",\r\n            \"postalCode\": \"01240\"\r\n        }\r\n    },\r\n    \"aggregateRating\": {\r\n        \"type\": \"AggregateRating\",\r\n        \"value\": {\r\n            \"ratingValue\": 3,\r\n            \"reviewCount\": 98\r\n        }\r\n    },\r\n    \"capacity\": {\r\n        \"type\": \"PropertyValue\",\r\n        \"value\": 100      \r\n    },\r\n    \"department\": {\r\n        \"type\": \"Text\",\r\n        \"value\": \"Franchise1\"            \r\n    },\r\n    \"description\": {\r\n        \"type\": \"Text\",\r\n        \"value\": \"Sample description\"            \r\n    },\r\n    \"location\": {\r\n        \"type\": \"geo:point\",\r\n        \"value\": \"42.8404625, -2.5123277\"\r\n    },\r\n    \"name\": {\r\n        \"type\": \"Text\",\r\n        \"value\": \"Sample-restaurant\"\r\n    },\r\n    \"occupancyLevels\": {\r\n        \"type\": \"PropertyValue\",\r\n        \"value\": 0,\r\n        \"metadata\": {\r\n            \"timestamp\": {\r\n                \"type\": \"DateTime\",\r\n                \"value\": \"2016-09-19T06:32:15.901Z\"\r\n            }\r\n        }\r\n    },\r\n    \"priceRange\": {\r\n        \"type\": \"Number\",\r\n        \"value\": 0\r\n    },\r\n    \"telephone\": {\r\n        \"type\": \"Text\",\r\n        \"value\": \"945 400 868\"\r\n    }\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "SUBSCRIBE-ORION NOTIFICATION",
+			"request": {
+				"url": "iot.testnca.org:1026/v1/subscribeContext",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Fiware-Service",
+						"value": "testnca",
+						"description": ""
+					},
+					{
+						"key": "Fiware-ServicePath",
+						"value": "/path1",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"entities\": [\r\n        {\r\n            \"type\": \"obj-test\",\r\n            \"isPattern\": \"true\",\r\n            \"id\": \"test*\"\r\n        }\r\n    ],\r\n    \"attributes\": [\r\n        \"temperature\"\r\n    ],\r\n    \"reference\": \"http://iot.testnca.org:5050/notify\",\r\n    \"duration\": \"P1M\",\r\n    \"notifyConditions\": [\r\n        {\r\n            \"type\": \"ONCHANGE\",\r\n            \"condValues\": [\r\n                \"temperature\"\r\n            ]\r\n        }\r\n    ],\r\n    \"throttling\": \"PT1S\"\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "CREATE-IDAS SERVICE",
+			"request": {
+				"url": "http://iot.testnca.org:4041/iot/services",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Fiware-Service",
+						"value": "testnca",
+						"description": ""
+					},
+					{
+						"key": "Fiware-ServicePath",
+						"value": "/path1",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"services\": [\r\n        {\r\n            \"apikey\": \"APIKEY-NCA\",\r\n            \"cbroker\": \"http://iot.testnca.org:1026\",\r\n            \"resource\": \"/iot/d\",\r\n            \"entity_type\": \"obj-test\",\r\n            \"attributes\": [\r\n                {\r\n                    \"object_id\": \"t\",\r\n                    \"name\": \"temperature\",\r\n                    \"type\": \"Number\"\r\n                }\r\n            ]\r\n        }\r\n    ]\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "CREATE-IDAS DEVICE",
+			"request": {
+				"url": "http://iot.testnca.org:4041/iot/devices",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Fiware-Service",
+						"value": "testnca",
+						"description": ""
+					},
+					{
+						"key": "Fiware-ServicePath",
+						"value": "/path1",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"devices\": [\r\n        {\r\n            \"device_id\": \"test1-sensor-temperature\",\r\n            \"entity_name\": \"test1\",\r\n            \"protocol\": \"UL20\",\r\n            \"entity_type\": \"obj-test\"\r\n        }\r\n    ]\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "UPDATE-IDAS SENSOR VALUE",
+			"request": {
+				"url": {
+					"raw": "http://iot.testnca.org:7896/iot/d?k=APIKEY-NCA&i=test1-sensor-temperature",
+					"protocol": "http",
+					"host": [
+						"iot",
+						"testnca",
+						"org"
+					],
+					"port": "7896",
+					"path": [
+						"iot",
+						"d"
+					],
+					"query": [
+						{
+							"key": "k",
+							"value": "APIKEY-NCA",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "i",
+							"value": "test1-sensor-temperature",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "t|25"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "REQ-STH",
+			"request": {
+				"url": {
+					"raw": "http://iot.testnca.org:8666/STH/v1/contextEntities/type/obj-test/id/test1/attributes/temperature?lastN=5",
+					"protocol": "http",
+					"host": [
+						"iot",
+						"testnca",
+						"org"
+					],
+					"port": "8666",
+					"path": [
+						"STH",
+						"v1",
+						"contextEntities",
+						"type",
+						"obj-test",
+						"id",
+						"test1",
+						"attributes",
+						"temperature"
+					],
+					"query": [
+						{
+							"key": "lastN",
+							"value": "5",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Fiware-Service",
+						"value": "testnca",
+						"description": ""
+					},
+					{
+						"key": "Fiware-ServicePath",
+						"value": "/path1",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

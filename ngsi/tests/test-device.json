@@ -1,0 +1,77 @@
+{
+  "devices": [
+    {
+      "device_id": "device_001",
+      "protocol": "UL2.0",
+      "entity_name": "device_001",
+      "attributes": [
+       	{
+	        "name": "status",
+	        "type": "string",
+	        "object_id": "s"
+	    },
+	    {
+	        "name": "temperature",
+	        "type": "float",
+	        "object_id": "t"
+	    },
+	    {
+	        "name": "humidity",
+	        "type": "float",
+	        "object_id": "h"
+	    }
+	  ],
+      "static_attributes": [
+        {
+          "name": "mystatic",
+          "type": "string",
+          "value": "truc"
+        },
+                {
+          "name": "monstatic",
+          "type": "integer",
+          "value": "300"
+        }
+
+       ]
+
+    }
+  ]
+}
+
+{
+  "temperature": {
+    "value": 26.5,
+    "type": "float"
+  },
+  "pressure": {
+    "value": 763,
+    "type": "float"
+  },
+  "description":  {
+        "type": "string",
+        "value": "test description"
+  },
+  "location": {
+        "type": "geo:point",
+        "value": "43.66756, 7.21334"
+  },
+ "unit": {
+        "type": "string",
+        "value": "°c"
+  }
+}
+
+
+"attrNames": [ "position" ],
+"location": {
+     "attrName": "position",
+     "coords": {
+         "type": "Point",
+         "coordinates": [ 7.21334, 43.667569 ]
+     }
+}
+
+https://store.lab.fiware.org/charging/media/assets/conwet/CoNWeT_column-chart-generator_0.3.2.wgt
+
+http://comet:8666/STH/v1/contextEntities/type/thing/id/thing:device_001/attributes/temperature?lastN=864000&dateFrom=2018-02-23T18%3A18%3A31.039Z

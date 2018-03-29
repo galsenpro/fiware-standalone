@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<operator xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="UPM" name="json-field-extractor" version="0.1.0">
+
+    <details>
+        <title>Json Field Extractor</title>
+        <homepage>https://github.com/mjimenez/json-field-extractor-operator</homepage>
+        <authors>Miguel Jiménez &lt;mjimenez@fi.upm.es&gt;</authors>
+        <email>mjimenez@fi.upm.es</email>
+        <image></image>
+        <smartphoneimage></smartphoneimage>
+        <description>Operator that, given a Json with an instance or a list, generates a list of the values of a configurable value inside that structure</description>
+        <longdescription>DESCRIPTION.md</longdescription>
+        <changelog>doc/changelog.md</changelog>
+        <doc>doc/userguide.md</doc>
+        <license>AGPLv3</license>
+        <issuetracker>https://github.com/mjimenez/json-field-extractor-operator/issues</issuetracker>
+    </details>
+
+    <requirements>
+        <!-- Add any extra requirements here -->
+        <!-- <feature name="${feature-name}" /> -->
+    </requirements>
+
+    <preferences>
+        <preference name="field-path" type="text" label="Path to enter the desired data in a dot-separated syntax" default="entity.category" />
+    </preferences>
+
+    <wiring>
+        <inputendpoint name="object-list" label="Object List" type="text" friendcode="list" />
+        <outputendpoint name="label-list" label="Label List" type="text" friendcode="label-serie" />
+    </wiring>
+
+    <scripts>
+        <script src="js/main.js"/>
+    </scripts>
+
+</operator>

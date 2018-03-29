@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWeT" name="linear-graph" version="3.0.0b3">
+  <details>
+    <title>Linear Graph</title>
+    <email>cblanco@conwet.com</email>
+    <image>images/catalogue.png</image>
+    <description>Generic linear graph.</description>
+    <doc>doc/index.html</doc>
+    <authors>cblanco</authors>
+  </details>
+  <preferences>
+    <preference name="legend" type="boolean" label="Display graph legend" description="Mark this option if you want to see a legend box near the graph" default="true"/>
+  </preferences>
+  <wiring>
+    <inputendpoint name="input" type="text" label="Data in" description="Data Input. See the documentation for more information" friendcode="graphData"/>
+  </wiring>
+  <contents src="index.html" useplatformstyle="true"/>
+  <rendering height="32" width="8"/>
+</widget>

@@ -1,0 +1,22 @@
+.rating {
+  display: inline-block;
+  font-family: FontAwesome;
+  font-weight: normal;
+  font-style: normal; }
+
+  .rating > .star {
+    margin: 2px;
+    display: inline-block;
+    vertical-align: middle; }
+
+    .rating > .star.off:before {
+      color: #666;
+      content: ""; }
+
+      .rating > .star.on:before {
+        color: #418cc8;
+        content: ""; }
+
+        .rating > .star.middle:before {
+          color: #418cc8;
+          content: ""; }

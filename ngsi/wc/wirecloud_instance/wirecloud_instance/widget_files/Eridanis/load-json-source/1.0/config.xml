@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<operator xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="Eridanis" name="load-json-source" version="1.0">
+    <details>
+        <title>Load json file</title>
+        <homepage>https://github.com/wirecloud-fiware/sth-source</homepage>
+        <authors>Álvaro Arranz García &lt;aarranz@conwet.com&gt;</authors>
+        <email>alain.galdemas@eridanis.com</email>
+        <image>images/json-file-logo.png</image>
+        <description>Load JSON file from URL and send it to out to wire as an a javascript object</description>
+        <longdescription>DESCRIPTION.md</longdescription>
+        <license>Apache License 2.0</license>
+        <licenseurl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseurl>
+        <doc>doc/userguide.md</doc>
+        <changelog>doc/changelog.md</changelog>
+        <issuetracker>https://github.com/wirecloud-fiware/sth-source-operator/issues</issuetracker>
+    </details>
+    <requirements>
+        <feature name="NGSI"/>
+    </requirements>
+    <preferences>
+        <preference name="json_file" type="text" label="json file name to load" description="URL of the file to load" default="http://localhost/static/json/highcharts.json"/>
+    </preferences>
+    <wiring>
+        <inputendpoint name="command" type="text" label="Command" description="Command to push the object out to the wire" friendcode="command"/>
+        <outputendpoint name="json_out" type="text" label="Json Output" description="" friendcode="json_out"/>
+    </wiring>
+    <scripts>
+        <script src="js/main.js"/>
+    </scripts>
+
+</operator>
