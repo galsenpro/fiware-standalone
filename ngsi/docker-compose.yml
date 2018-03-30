@@ -54,9 +54,10 @@ services:
         - "8083:1883"
         - "8084:8883"
 
-  idasJSON:
+  idasJSON
+      #image: fiware/iotagent-json
+      # l'image fiware/iotagent-json ne fonctionne pas bien il faut la builder à partir du repo "agaldemas"
       image: iotagent-json
-      #image: iotagent-json
       #hostname: idasjson
       #container_name: f-idasJSON
       depends_on:
@@ -73,7 +74,7 @@ services:
           - ./iotagentjson/config.js:/opt/iotajson/config.js
 
   idasUL:
-      image: iotagent-ul
+      image: fiware/iotagent-ul
       #image: iotagent-ul
       #hostname: idasul
       #container_name: f-idasUL
