@@ -25,7 +25,7 @@ services:
     #     ipv4_address: 172.17.0.6
 
   orion:
-    image: fiware/orion:1.12.0
+    image: fiware/orion:1.12.0 #1.11.0
     #image: orion
     #hostname: orion
     #container_name: f-orion
@@ -54,10 +54,9 @@ services:
         - "8083:1883"
         - "8084:8883"
 
-  idasJSON
-      #image: fiware/iotagent-json
-      # l'image fiware/iotagent-json ne fonctionne pas bien il faut la builder à partir du repo "agaldemas"
+  idasJSON:
       image: iotagent-json
+      #image: fiware/iotagent-json
       #hostname: idasjson
       #container_name: f-idasJSON
       depends_on:
@@ -74,8 +73,8 @@ services:
           - ./iotagentjson/config.js:/opt/iotajson/config.js
 
   idasUL:
-      image: fiware/iotagent-ul
-      #image: iotagent-ul
+      #image: fiware/iotagent-ul
+      image: iotagent-ul
       #hostname: idasul
       #container_name: f-idasUL
       depends_on:
@@ -114,6 +113,22 @@ services:
           - "5432:5432"
       volumes:
           - ./postgres-data:/var/lib/postgresql/data
+      environment:
+         - POSTGRES_DB=test
+         - POSTGRES_USER=postgres
+         - POSTGRES_PASSWORD=postgres
+
+  postgres-rep:
+      image: postgres:latest
+      #hostname: postgres
+      #container_name: f-postgres
+      restart: always
+      expose:
+          - "5433"
+      ports:
+          - "5433:5432"
+      volumes:
+          - ./postgres-data-rep:/var/lib/postgresql/data
       environment:
          - POSTGRES_DB=test
          - POSTGRES_USER=postgres
@@ -186,9 +201,9 @@ services:
 
   keyrock:
       # can be built from local dockerfile
-      build: keyrock/.
+      #build: keyrock/.
       #image: fiware/idm:latest
-      #image: keystone
+      #image: keyrock
       image: keystone
       #hostname: keyrock
       #container_name: f-keyrock
@@ -208,6 +223,30 @@ services:
           - ./keyrock/keystone.conf:/keystone/etc/keystone.conf
       environment:
           - IDM_PASS=idm
+
+  # keyrock:
+  #     # can be built from local dockerfile
+  #     #build: keyrock/.
+  #     #image: fiware/idm:latest
+  #     image: keyrock
+  #     #image: keystone
+  #     #hostname: keyrock
+  #     #container_name: f-keyrock
+  #     links:
+  #         - postgres
+  #         - authzforce
+  #     expose:
+  #         - "3100"
+  #         - "4000"
+  #         #- "35357"
+  #     ports:
+  #         - "3100:3000"
+  #         - "4000:4000"
+  #     volumes:
+  #         - ./keyrock-new/docker-entrypoint.sh:/opt/fiware-idm/docker-entrypoint.sh
+  #         - ./keyrock-new/config.js:/opt/fiware-idm/config.js
+  #     environment:
+  #         - IDM_PASS=idm
 
 
   pep-proxy:
@@ -238,15 +277,15 @@ services:
       volumes:
         - ./horizon-conf/local_settings.py:/horizon/openstack_dashboard/local/local_settings.py
 
-  os-horizon:
-      build: ./docker-openstack-horizon
-      image: openstack-horizon
-      links:
-          - keyrock:keystone
-      expose:
-          - "8002"
-      ports:
-          - "8002:80"
+  # os-horizon:
+  #     build: ./docker-openstack-horizon
+  #     image: openstack-horizon
+  #     links:
+  #         - keyrock:keystone
+  #     expose:
+  #         - "8002"
+  #     ports:
+  #         - "8002:80"
       #volumes:
       #    - ./os-horizon-conf/local_settings.py:/opt/horizon/openstack_dashboard/local/local_settings.py
 

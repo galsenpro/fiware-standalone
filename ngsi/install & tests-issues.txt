@@ -37,6 +37,10 @@ faire pareil pour l'iotagent-json
 sinon bonne nouvelle ils ont fait le merge des fixs !
 on va pouvoir utiliser les images officielles ! Mais => OK pour agent UL, mais pas pour l'agent JSON ?
 
+pour information globale :
+  - un service Fiware (Fiware-Service) est l'équivalent d'un domaine Openstack/keystone.
+  - un sous service Fiware (Fiware-ServicePath) est l'équivalent d'un project Openstack/keystone.
+
 
 docker-compose up
 docker stats :
@@ -394,3 +398,35 @@ donc pour l'instant il sera plus simple d'utiliser le ging/horizon, dans lequel 
 
 keyrock/keystone et horizon sont à builder à partir des repos forkés (fiware-idm), ou pour keyrock/keystone à partir du répertoire keyrock :
 docker build -t keystone.
+
+==========================================
+test orion + pep proxy + idm
+pour pouvoir authentifier les accès à Orion, il est nécessaire de passer par le pep_proxy (écoute sur le port 8081 dans la présente configuration).
+1/
+dans l'idm (horizon + keyrock) http://localhost:8001 avec la config installée (idm/idm pour se connecter)
+enregistrer l'application "orion via pep proxy" => voir "fiware-howtobeginwithorioncontextbroker1-170711202744.pdf" dans répertoire docs
+URL: http://pep-proxy:8081
+callback URL: http://orion:1026
+générer les user name et password pour le pep proxy, les récupérer pour modifier la configuration de celui-ci
+le fichier config.js (dans répertoire pepproxy pour ce projet)
+en production il sera plus pratique de laisser le fichier de configuration dans un voliume host comme dans ce projet.
+après la modif du fichier de config pep proxy, redémarrer le container.
+
+2/
+obtenir un token auprès d'Horizon/keyrock
+essayé avec postman et un script pre-request pour préparer l'attribut Authorization dans le header
+qui doit contenir quelque chose comme "Basic " + base64(client_id + ":" + client_secret)
+cela ne fonctionne pas...
+par contre en utilisant la fonction Authorization de postman j'ai pu générer un token oauth2
+voir image postman_request_token_keyrock.png dans répertoire test.
+le client_id et client_secret utilisés sont les OAuth2 Credentials générés pour l'application enregistrée précédemment dans keyrock:
+à savoir "orion via pep proxy"
+
+3/ une fois le token généré, le récupérer pour faire une requête via le pepproxy écoutant sur le port 8081,
+http://localhost:8081/v2/entities/?options=keyValues
+utilisation dans le header de la requête tel que :
+X-Auth-Token:Jvcv553n4BtlcsgpWX1o5DIUyyzoWB
+Fiware-Service:testservice
+Fiware-ServicePath:/testalain
+
+à noter ce token n'a pas été accepté avec /# dans le Fiware-ServicePath !
