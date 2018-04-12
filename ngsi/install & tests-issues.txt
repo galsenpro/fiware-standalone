@@ -430,3 +430,4 @@ Fiware-Service:testservice
 Fiware-ServicePath:/testalain
 
 à noter ce token n'a pas été accepté avec /# dans le Fiware-ServicePath !
+le token généré n'est valable que pour une heure, il faut donc le renouveler périodiquement !
