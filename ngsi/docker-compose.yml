@@ -134,6 +134,11 @@ services:
          - POSTGRES_USER=postgres
          - POSTGRES_PASSWORD=postgres
 
+  repmgr:
+    image: repmgr
+    volumes:
+        - ./repmgr/repmgr.conf:/repmgr.conf
+
   perseo-core:
       image: telefonicaiot/perseo-core
       #hostname: perseo-core
@@ -371,6 +376,34 @@ services:
       - "1880:1880"
     volumes:
       - ./nodered:/data
+
+  # orchestrator:
+  #   image: telefonicaiot/orchestrator:latest
+  #   expose:
+  #     - "8084"
+  #   links:
+  #     - keystone
+  #     - keypass
+  #     - pep-orion
+  #     - pep-perseo-fe
+  #   ports:
+  #     - "8084:8084"
+  #   command: -keystonehost keyrock -keypasshost keypass -orionhost orion -iotahost idasJSON -pepperseohost pep-perseo-fe -sthhost 127.0.0.1 -perseohost perseo-fe
+  #
+  # portal:
+  #   image: telefonicaiot/portal:latest
+  #   links:
+  #     - keystone
+  #     - pep-orion
+  #     - orchestrator
+  #   ports:
+  #     - "80:80"
+  #     - "8008:8008"
+  #     - "443:443"
+  #   environment:
+  #     - portal_hostname=my_iot_portal
+  #   command: -urlcep localhost:9090 -urlidm keystone:5000 -urlcb orion:1026 -urlorc orchestrator:8084 -urliot localhost:8081 -urlsth cygnus:8666
+
 
   # knowagedb:
   #   image: mysql:5.5

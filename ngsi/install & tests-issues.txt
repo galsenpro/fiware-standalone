@@ -129,10 +129,17 @@ la doc indique qu'il faut donner le tout dans un json en entrée, car à chaque 
 pas vraiment optimisé !
 pour pallier à ce problème j'ai fait un operator "json_merge" qui concatène 2 json, et un operator "load json file"
 qui charge la partie config d'un fichier json stocké dans les ressources du serveur wirecloud
-il faut encore améliorer pour pouvoir injecter plusieurs séries de données.
+il faut encore améliorer pour pouvoir injecter plusieurs séries de données dans le même graphique.
 
 avec ces widgets et operators, j'ai donc pu créer une dashboard de demo dans le wirecloud :
 admin/test
+les widgets sont déjà provisionné dans le présent wirecloud qui se déploie.
+les archives des widgets sont aussi présentes dans le répertoire /ngsi/wc/widgets
+
+wirecloud fonctionne avec un autre composant chargé de gérer la communication push : ngsiproxy
+pour fonctionner dans ce contexte (docker en natif sur la machine), il est nécessaire de modifier le fichier hosts
+tel que: 127.0.0.1       localhost ngsiproxy
+pour tromper l'application wirecloud dans le navigateur...
 
 
 =======================
@@ -431,3 +438,93 @@ Fiware-ServicePath:/testalain
 
 à noter ce token n'a pas été accepté avec /# dans le Fiware-ServicePath !
 le token généré n'est valable que pour une heure, il faut donc le renouveler périodiquement !
+
+
+
+
+=====================================================
+Postgres replication logique
+la réplication logique dans postgres, fonctionne sur un principe de publish/subscribe
+le master publie, et les répliques souscrivent aux publications du master, ou d'une réplique (en cascade, mais pas forcément utile dans notree cas)
+en production sur les 3 DC de MNCA, il y aurait un postgres master sur le DC principal, et une réplique dans chaque autre DC.
+
+pour aller vite :
+https://www.postgresql.org/docs/10/static/logical-replication-quick-setup.html
+1/ sur le master : modif postgresql.conf add :
+wal_level = logical
+peut être fait avec psql:
+ALTER SYSTEM SET wal_level = 'logical';
+
+redémarrer le container postgres master
+
+2/ sur le master modif pg_hba.conf pour le user replication add line :
+host     all     repuser     0.0.0.0/0     md5
+
+3/ créer un user spécial pour la réplication (repuser)
+en psql:
+CREATE ROLE repuser WITH LOGIN PASSWORD '<repuser password>' REPLICATION;
+lui donner les privilèges sur les bases de données, sinon probléme :
+ERROR:  permission denied for relation.... lors de l'init de la réplication
+
+GRANT ALL PRIVILEGES ON DATABASE <database name> TO repuser;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO repuser;
+et aussi mais pas obligatoire:
+GRANT <database name> TO repuser WITH ADMIN OPTION;
+
+pour notre cas:
+GRANT ALL PRIVILEGES ON DATABASE keystone TO repuser;
+psql sur la base keystone:
+\connect keystone
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO repuser;
+GRANT ALL PRIVILEGES ON DATABASE keystone TO repuser;
+psql sur la base postgres (celle de wirecloud dans notre cas)
+\connect postgres
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO repuser;
+
+4/ pour chaque base de données créer une publication tel que:
+CREATE PUBLICATION <publication_name> FOR ALL TABLES;
+doc: https://www.postgresql.org/docs/10/static/sql-createpublication.html
+avec psql:
+\connect keystone
+CREATE PUBLICATION keystone_pub FOR ALL TABLES;
+
+\connect postgres
+CREATE PUBLICATION postgres_wc_pub FOR ALL TABLES;
+
+5/ sur les répliques créer les bases de données à répliquer
+en psql : CREATE DATABASE <databasename>
+exporter les schémas des bases (pas les données) à partir du master :
+pg_dump -s <databasename> | psql <databasename> -h <replica host>
+
+entre autres pour les bases qui nous interessent dans ce projet:
+pg_dump -s keystone | psql keystone -h postgres-rep
+pg_dump -s postgres | psql postgres -h postgres-rep
+
+6/ pour chaque base de données à répliquer créer une subscription:
+CREATE SUBSCRIPTION subscription_name
+    CONNECTION 'dbname=<db name> host=<primary node> user=repuser password=<repuser password>'
+    PUBLICATION <publication_name>
+doc: https://www.postgresql.org/docs/10/static/sql-createsubscription.html
+
+
+pour notre cas:
+CREATE SUBSCRIPTION keystone_sub
+CONNECTION 'dbname=keystone host=postgres user=repuser password=repuser'
+PUBLICATION keystone_pub;
+
+CREATE SUBSCRIPTION postgres_wc_sub
+CONNECTION 'dbname=postgres host=postgres user=repuser password=repuser'
+PUBLICATION postgres_wc_pub;
+
+
+un tuto pour docker swarm par crunchydata :
+http://info.crunchydata.com/blog/an-easy-recipe-for-creating-a-postgresql-cluster-with-docker-swarm
+
+OK, on a répliqué les bases postgres, mais maintenant il nous faut un moyen de basculer
+automatiquement sur une réplique en cas de pb sur le master !
+plusieurs solutions sont disponibles pour postgres :
+PAF (pour Postgres Automatic Fail-over) => https://clusterlabs.github.io/PAF/
+utilise Pacemaker+Corosync
+Patroni/SPILO => https://github.com/zalando/patroni
+PgPool II => http://www.pgpool.net/
+repmgr => https://repmgr.org/
